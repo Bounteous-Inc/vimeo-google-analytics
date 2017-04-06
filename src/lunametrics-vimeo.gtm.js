@@ -122,8 +122,7 @@
       percentages: {
         each: [],
         every: []
-      },
-      dataLayerName: 'dataLayer'
+     }
     }, config);
 
     forEach_(['each', 'every'], function(setting) {
@@ -230,7 +229,7 @@
 
       default: 
 
-        if (!isUndefined_(window[config.dataLayerName])) {
+        if (!isUndefined_(window[gtmGlobal])) {
 
           syntax.type = 'gtm';
           dataLayer = window[gtmGlobal] = window[gtmGlobal] || [];
