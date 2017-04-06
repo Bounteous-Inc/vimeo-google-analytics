@@ -1,0 +1,186 @@
+{
+    "exportFormatVersion": 1.3,
+    "exportTime": "2015-10-16 19:22:13",
+    "containerVersion": {
+        "accountId": "28896164",
+        "containerId": "1638837",
+        "containerVersionId": "0",
+        "deleted": false,
+        "container": {
+            "accountId": "28896164",
+            "containerId": "1638837",
+            "name": "Vimeo Tracking",
+            "publicId": "GTM-MGHN6W",
+            "timeZoneCountryId": "US",
+            "timeZoneId": "America/Los_Angeles",
+            "notes": "",
+            "usageContext": ["WEB"],
+            "fingerprint": "1445023325858",
+            "enabledBuiltInVariable": ["DEBUG_MODE"]
+        },
+        "tag": [{
+            "accountId": "28896164",
+            "containerId": "1638837",
+            "tagId": "1",
+            "name": "CU - Vimeo Tracking - LunaMetrics Plugin",
+            "type": "html",
+            "liveOnly": false,
+            "parameter": [{
+                "type": "BOOLEAN",
+                "key": "supportDocumentWrite",
+                "value": "false"
+            }, {
+                "type": "TEMPLATE",
+                "key": "html",
+                "value": "<script type=\"text/javascript\" id=\"gtm-vimeo-tracking\">\n;(function(document, window, config) {\n\n  'use strict';\n  // The API won't work on LT IE9, so we bail if we detect those UAs\n  if (navigator.userAgent.match(/MSIE [678]\\./gi)) return;\n\n  config = cleanConfig(config);\n\n  var handle = getHandler(config.syntax);\n\n  if (document.readyState !== 'loading') {\n\n    init();\n\n  } else {\n\n    document.addEventListener('DOMContentLoaded', function() {\n\n      init();\n      document.addEventListener('load', init, true);\n\n    });\n\n  }\n\n  function init() {\n\n    var videos = filter_(selectAllTags_('iframe'), isVimeo);\n\n    if (!videos.length) return;\n\n    loadApi(function() {\n\n      forEach_(videos, listenTo);\n\n    });\n\n  }\n\n  function isVimeo(el) {\n\n    return el.src.indexOf('player.vimeo.com/video/') > -1;\n\n  }\n\n  function loadApi(callback) {\n\n    if (isUndefined_(window.Vimeo)) {\n\n      loadScript('https://player.vimeo.com/api/player.js', callback);\n\n    } else {\n\n      callback();\n\n    }\n\n  }\n\n  function listenTo(el) {\n\n    if (el.__vimeoTracked) return;\n    \n    el.__vimeoTracked = true;\n\n    var video = new Vimeo.Player(el);\n    var percentages = config._track.percentages;\n    var cache = {};\n\n\n    video.getVideoTitle()\n      .then(function(title) {\n\n        video.on('play', function() {\n\n          handle('Play', title);\n\n        });\n\n        video.on('pause', function(evt) {\n\n          if (evt.percent !== 1) handle('Pause', title);\n\n        });\n\n        video.on('ended', function() {\n\n          handle('Watch to End', title);\n\n        });\n\n        video.on('timeupdate', function(evt) {\n\n          var percentage = evt.percent;\n          var key;\n\n          for (key in percentages) {\n\n            if (percentage >= percentages[key] && !cache[key]) {\n\n              cache[key] = true;\n              handle(key, title);\n\n            }\n\n          }\n\n        });\n\n      });\n\n  }\n\n  function cleanConfig(config) {\n\n    config = extend_({}, {\n      events: {\n        'Play': true,\n        'Pause': true,\n        'Watch to End': true\n      },\n      percentages: {\n        each: [],\n        every: []\n      },\n      dataLayerName: 'dataLayer'\n    }, config);\n\n    forEach_(['each', 'every'], function(setting) {\n\n      var vals = config.percentages[setting];\n\n      if (!isArray_(vals)) vals = [vals];\n\n      if (vals) config.percentages[setting] = map_(vals, Number);\n\n    });\n\n    var points = [].concat(config.percentages.each);\n\n    if (config.percentages.every) {\n\n      forEach_(config.percentages.every, function(val) {\n\n        var n = 100 / val;\n        var every = [];\n        var i;\n\n        for (i = 1; i < n; i++) every.push(val * i);\n\n        points = points.concat(filter_(every, function(val) {\n\n          return val > 0.0 && val < 100.0;\n\n        }));\n\n      });\n\n    }\n\n    var percentages = reduce_(points, function(prev, curr) {\n\n      prev[curr + '%'] = curr / 100.0;\n      return prev;\n\n    }, {});\n\n    config._track = {\n      percentages: percentages\n    };\n\n    return config;\n\n  }\n\n  function getHandler(syntax) {\n\n    syntax = syntax || {};\n\n    var gtmGlobal = syntax.name || 'dataLayer';\n    var uaGlobal = syntax.name || window.GoogleAnalyticsObject || 'ga';\n    var clGlobal = '_gaq';\n    var dataLayer;\n\n    var handlers = {\n      'gtm': function(state, title) {\n\n        dataLayer.push({\n          event: 'vimeoTrack',\n          attributes: {\n            videoAction: state,\n            videoName: title\n          }\n        });\n\n      },\n      'cl': function(state, title) {\n\n        window[clGlobal].push(['_trackEvent', 'Videos', state, title]);\n\n      },\n      'ua': function(state, title) {\n\n        window[uaGlobal]('send', 'event', 'Videos', state, title);\n\n      }\n    };\n\n    switch(syntax.type) {\n\n      case 'gtm':\n\n        dataLayer = window[gtmGlobal] = window[gtmGlobal] || [];\n        break;\n\n      case 'ua':\n\n        window[uaGlobal] = window[uaGlobal] || function() {\n\n          (window[uaGlobal].q = window[uaGlobal].q || []).push(arguments);\n\n        };\n        window[uaGlobal].l = +new Date(); \n        break;\n\n      case 'cl':\n\n        window[clGlobal] = window[clGlobal] || [];\n        break;\n\n      default: \n\n        if (!isUndefined_(window[config.dataLayerName])) {\n\n          syntax.type = 'gtm';\n          dataLayer = window[gtmGlobal] = window[gtmGlobal] || [];\n\n        } else if (uaGlobal&& !isUndefined_(window[uaGlobal])) {\n\n          syntax.type = 'ua';\n\n        } else if (!isUndefined_(window[clGlobal]) && !isUndefined_(window[clGlobal].push)) {\n\n          syntax.type = 'cl';\n\n        }\n        break;\n    }\n\n    return handlers[syntax.type];\n\n  }\n\n  function extend_() {\n\n    var args = [].slice.call(arguments);\n    var dst = args.shift();\n    var src;\n    var key;\n    var i;\n\n    for (i = 0; i < args.length; i++) {\n\n      src = args[i];\n\n      for (key in src) {\n\n        dst[key] = src[key];\n\n      }\n\n    }\n\n    return dst;\n\n  }\n\n  function isArray_(o) {\n\n    if (Array.isArray_) return Array.isArray_(o);\n\n    return Object.prototype.toString.call(o) === '[object Array]';\n\n  }\n\n  function forEach_(arr, fn) {\n\n    if (Array.prototype.forEach_) return arr.forEach.call(arr, fn);\n\n    var i;\n\n    for (i = 0; i < arr.length; i++) {\n\n      fn.call(window, arr[i], i, arr);\n\n    }\n\n  }\n\n  function map_(arr, fn) {\n\n    if (Array.prototype.map_) return arr.map.call(arr, fn);\n\n    var newArr = [];\n\n    forEach_(arr, function(el, ind, arr) {\n\n      newArr.push(fn.call(window, el, ind, arr));\n\n    });\n\n    return newArr;\n\n  }\n\n\n  function filter_(arr, fn) {\n\n    if (Array.prototype.filter) return arr.filter.call(arr, fn);\n\n    var newArr = [];\n\n    forEach_(arr, function(el, ind, arr) {\n\n      if (fn.call(window, el, ind, arr)) newArr.push(el);\n\n    });\n\n    return newArr;\n\n  }\n\n  function reduce_(arr, fn, init) {\n\n    if (Array.prototype.reduce) return arr.reduce.call(arr, fn, init);\n\n    var result = init;\n    var el;\n    var i;\n\n    for (i = 0; i < arr.length; i++) {\n\n      el = arr[i];\n      result = fn.call(window, result, el, arr, i);\n\n    }\n\n    return result;\n\n  }\n\n  function isUndefined_(thing) {\n\n    return typeof thing === 'undefined';\n\n  }\n\n  function selectAllTags_(tags) {\n\n    if (!isArray_(tags)) tags = [tags];\n\n    return [].slice.call(document.querySelectorAll(tags.join()));\n\n  }\n\n  function loadScript(src, callback) {\n\n    var f, s;\n\n    f = document.getElementsByTagName('script')[0];\n    s = document.createElement('script');\n    s.onload = callCallback;\n    s.src = src;\n    s.async = true;\n\n    f.parentNode.insertBefore(s, f);\n\n    function callCallback() {\n\n      if (callback) {\n\n        callback();\n        s.onload = null;\n\n      }\n\n    }\n\n  }\n\n})(document, window, {\n  'events': {\n    'Play': true,\n    'Pause': true,\n    'Watch to End': true\n  },\n  'percentages': {\n    'every': 25,\n    'each': [10, 90]\n  }\n});\n/*\n * Configuration Details\n *\n * @property events object\n * Defines which events emitted by YouTube API\n * will be turned into Google Analytics or GTM events\n *\n * @property percentages object\n * Object with configurations for percentage viewed events\n *\n *   @property each Array|Number|String\n *   Fires an event once each percentage ahs been reached\n *\n *   @property every Array|Number|String\n *   Fires an event for every n% viewed\n *\n * @property syntax object\n * Object with configurations for syntax\n *\n *   @property type ('gtm'|'cl'|'ua')\n *   Forces script to use GTM ('gtm'), Universal Analytics ('ul'), or \n *   Classic Analytics ('cl'); defaults to auto-detection\n *\n *   @property name string\n *   THIS IS USUALLY UNNECESSARY! Optionally instantiate command queue for syntax \n *   in question. Useful if the tracking library and tracked events can fire \n *   before GTM or Google Analytics can be loaded. Be careful with this setting \n *   if you're new to GA/GTM. GTM or Universal Analytics Only!\n */\n/*\n * v1.0.0\n * Created by the Google Analytics consultants at http://www.lunametrics.com\n * Written by @notdanwilkerson\n * Documentation: https://github.com/lunametrics/vimeo-google-analytics/\n * Licensed under the MIT License\n *//*\n * v1.0.0\n * Created by the Google Analytics consultants at http://www.lunametrics.com\n * Written by @notdanwilkerson\n * Documentation: https://github.com/lunametrics/vimeo-google-analytics/\n * Licensed under the MIT License\n *//*\n * v1.0.0\n * Created by the Google Analytics consultants at http://www.lunametrics.com\n * Written by @notdanwilkerson\n * Documentation: https://github.com/lunametrics/vimeo-google-analytics/\n * Licensed under the MIT License\n */\n</script>"
+            }],
+            "fingerprint": "0",
+            "firingTriggerId": ["2147479553"],
+            "parentFolderId": "2",
+            "tagFiringOption": "ONCE_PER_EVENT"
+        }, {
+            "accountId": "28896164",
+            "containerId": "1638837",
+            "tagId": "2",
+            "name": "GA - Event - Vimeo Tracking",
+            "type": "ua",
+            "liveOnly": false,
+            "parameter": [{
+                "type": "BOOLEAN",
+                "key": "enableEcommerce",
+                "value": "false"
+            }, {
+                "type": "BOOLEAN",
+                "key": "setTrackerName",
+                "value": "false"
+            }, {
+                "type": "LIST",
+                "key": "fieldsToSet",
+                "list": [{
+                    "type": "MAP",
+                    "map": [{
+                        "type": "TEMPLATE",
+                        "key": "fieldName",
+                        "value": "cookieDomain"
+                    }, {
+                        "type": "TEMPLATE",
+                        "key": "value",
+                        "value": "auto"
+                    }]
+                }]
+            }, {
+                "type": "BOOLEAN",
+                "key": "doubleClick",
+                "value": "false"
+            }, {
+                "type": "TEMPLATE",
+                "key": "useDebugVersion",
+                "value": "{{Debug Mode}}"
+            }, {
+                "type": "TEMPLATE",
+                "key": "trackingId",
+                "value": "{{YOUR_GA_TRACKING_ID}}"
+            }, {
+                "type": "TEMPLATE",
+                "key": "trackType",
+                "value": "TRACK_EVENT"
+            }, {
+                "type": "BOOLEAN",
+                "key": "nonInteraction",
+                "value": "false"
+            }, {
+                "type": "BOOLEAN",
+                "key": "enableLinkId",
+                "value": "false"
+            }, {
+                "type": "TEMPLATE",
+                "key": "eventLabel",
+                "value": "{{DLV - Video Name}}"
+            }, {
+                "type": "TEMPLATE",
+                "key": "eventAction",
+                "value": "{{DLV - Video Action}}"
+            }, {
+                "type": "TEMPLATE",
+                "key": "eventCategory",
+                "value": "Videos"
+            }],
+            "fingerprint": "0",
+            "firingTriggerId": ["1"],
+            "parentFolderId": "2",
+            "tagFiringOption": "ONCE_PER_EVENT"
+        }],
+        "fingerprint": "0",
+        "trigger": [{
+            "accountId": "28896164",
+            "containerId": "1638837",
+            "triggerId": "1",
+            "name": "Event - Vimeo Tracking",
+            "type": "CUSTOM_EVENT",
+            "customEventFilter": [{
+                "type": "EQUALS",
+                "parameter": [{
+                    "type": "TEMPLATE",
+                    "key": "arg0",
+                    "value": "{{_event}}"
+                }, {
+                    "type": "TEMPLATE",
+                    "key": "arg1",
+                    "value": "vimeoTrack"
+                }]
+            }],
+            "fingerprint": "1445023325858",
+            "parentFolderId": "2"
+        }],
+        "variable": [{
+            "accountId": "28896164",
+            "containerId": "1638837",
+            "variableId": "1",
+            "name": "DLV - Video Action",
+            "type": "v",
+            "parameter": [{
+                "type": "BOOLEAN",
+                "key": "setDefaultValue",
+                "value": "false"
+            }, {
+                "type": "TEMPLATE",
+                "key": "name",
+                "value": "attributes.videoAction"
+            }, {
+                "type": "INTEGER",
+                "key": "dataLayerVersion",
+                "value": "2"
+            }],
+            "fingerprint": "0",
+            "parentFolderId": "2"
+        }, {
+            "accountId": "28896164",
+            "containerId": "1638837",
+            "variableId": "2",
+            "name": "DLV - Video Name",
+            "type": "v",
+            "parameter": [{
+                "type": "BOOLEAN",
+                "key": "setDefaultValue",
+                "value": "false"
+            }, {
+                "type": "TEMPLATE",
+                "key": "name",
+                "value": "attributes.videoName"
+            }, {
+                "type": "INTEGER",
+                "key": "dataLayerVersion",
+                "value": "2"
+            }],
+            "fingerprint": "0",
+            "parentFolderId": "2"
+        }],
+        "folder": [{
+            "accountId": "28896164",
+            "containerId": "1638837",
+            "folderId": "2",
+            "name": "LunaMetrics Vimeo Tracking Plugin",
+            "fingerprint": "1445023325286"
+        }]
+    }
+}

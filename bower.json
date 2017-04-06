@@ -1,0 +1,15 @@
+{
+  "name": "vimeo-google-analytics",
+  "version": "1.0.0",
+  "homepage": "https://github.com/lunametrics/vimeo-google-analytics",
+  "authors": [
+    "Dan Wilkerson <notdanwilkerson@gmail.com>"
+  ],
+  "description": "Vimeo Google Analytics Embed Tracking",
+  "main": "lunametrics-vimeo.gtm.js",
+  "keywords": [
+    "vimeo",
+    "analytics"
+  ],
+  "license": "MIT"
+}
