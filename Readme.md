@@ -9,6 +9,8 @@ Once installed, the plugin will fire events with the following settings:
 
 It will automatically bind to all videos on the page, even those added inserted dynamically after DOM Ready.
 
+## Installation & Documentation
+
 For installation instructions and complete documentation, visit [http://www.lunametrics.com/labs/recipes/vimeo-tracking-for-gtm/#documentation](http://www.lunametrics.com/labs/recipes/vimeo-tracking-for-gtm/#documentation).
 
 ## License
