@@ -432,19 +432,6 @@
  *   if you're new to GA/GTM. GTM or Universal Analytics Only!
  */
 /*
- * v1.0.0
- * Created by the Google Analytics consultants at http://www.lunametrics.com
- * Written by @notdanwilkerson
- * Documentation: https://github.com/lunametrics/vimeo-google-analytics/
- * Licensed under the MIT License
- *//*
- * v1.0.0
- * Created by the Google Analytics consultants at http://www.lunametrics.com
- * Written by @notdanwilkerson
- * Documentation: https://github.com/lunametrics/vimeo-google-analytics/
- * Licensed under the MIT License
- */
-/*
  * v1.0.1
  * Created by the Google Analytics consultants at http://www.lunametrics.com
  * Written by @notdanwilkerson
