@@ -60,52 +60,56 @@
   function listenTo(el) {
 
     if (el.__vimeoTracked) return;
-    
+
     el.__vimeoTracked = true;
 
     var video = new Vimeo.Player(el);
     var percentages = config._track.percentages;
+    var eventNameDict = {
+			'Play': 'play',
+			'Pause': 'pause',
+			'Watch to End': 'ended'
+		};
     var cache = {};
-
 
     video.getVideoTitle()
       .then(function(title) {
 
-        video.on('play', function() {
+				forEach_(['Play', 'Pause', 'Watch to End'], function(key) {
 
-          handle('Play', title);
+					if (config.events[key]) {
 
-        });
+						video.on(eventNameDict[key], function() {
 
-        video.on('pause', function(evt) {
+							handle(key, title);
 
-          if (evt.percent !== 1) handle('Pause', title);
+						});
 
-        });
+					}
 
-        video.on('ended', function() {
+				});
 
-          handle('Watch to End', title);
+				if (percentages) {
 
-        });
+	        video.on('timeupdate', function(evt) {
 
-        video.on('timeupdate', function(evt) {
+	          var percentage = evt.percent;
+	          var key;
 
-          var percentage = evt.percent;
-          var key;
+	          for (key in percentages) {
 
-          for (key in percentages) {
+	            if (percentage >= percentages[key] && !cache[key]) {
 
-            if (percentage >= percentages[key] && !cache[key]) {
+	              cache[key] = true;
+	              handle(key, title);
 
-              cache[key] = true;
-              handle(key, title);
+	            }
 
-            }
+	          }
 
-          }
+	        });
 
-        });
+				}
 
       });
 
@@ -122,8 +126,7 @@
       percentages: {
         each: [],
         every: []
-      },
-      dataLayerName: 'dataLayer'
+     }
     }, config);
 
     forEach_(['each', 'every'], function(setting) {
@@ -220,7 +223,7 @@
           (window[uaGlobal].q = window[uaGlobal].q || []).push(arguments);
 
         };
-        window[uaGlobal].l = +new Date(); 
+        window[uaGlobal].l = +new Date();
         break;
 
       case 'cl':
@@ -228,9 +231,9 @@
         window[clGlobal] = window[clGlobal] || [];
         break;
 
-      default: 
+      default:
 
-        if (!isUndefined_(window[config.dataLayerName])) {
+        if (!isUndefined_(window[gtmGlobal])) {
 
           syntax.type = 'gtm';
           dataLayer = window[gtmGlobal] = window[gtmGlobal] || [];
@@ -419,13 +422,13 @@
  * Object with configurations for syntax
  *
  *   @property type ('gtm'|'cl'|'ua')
- *   Forces script to use GTM ('gtm'), Universal Analytics ('ul'), or 
+ *   Forces script to use GTM ('gtm'), Universal Analytics ('ul'), or
  *   Classic Analytics ('cl'); defaults to auto-detection
  *
  *   @property name string
- *   THIS IS USUALLY UNNECESSARY! Optionally instantiate command queue for syntax 
- *   in question. Useful if the tracking library and tracked events can fire 
- *   before GTM or Google Analytics can be loaded. Be careful with this setting 
+ *   THIS IS USUALLY UNNECESSARY! Optionally instantiate command queue for syntax
+ *   in question. Useful if the tracking library and tracked events can fire
+ *   before GTM or Google Analytics can be loaded. Be careful with this setting
  *   if you're new to GA/GTM. GTM or Universal Analytics Only!
  */
 /*
@@ -440,8 +443,9 @@
  * Written by @notdanwilkerson
  * Documentation: https://github.com/lunametrics/vimeo-google-analytics/
  * Licensed under the MIT License
- *//*
- * v1.0.0
+ */
+/*
+ * v1.0.1
  * Created by the Google Analytics consultants at http://www.lunametrics.com
  * Written by @notdanwilkerson
  * Documentation: https://github.com/lunametrics/vimeo-google-analytics/
