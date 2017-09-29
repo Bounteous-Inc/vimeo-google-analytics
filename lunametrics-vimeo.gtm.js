@@ -14,14 +14,12 @@
 
   } else {
 
-    document.addEventListener('DOMContentLoaded', function() {
-
-      init();
-      document.addEventListener('load', init, true);
-
-    });
+    document.addEventListener('DOMContentLoaded', init);
 
   }
+
+	// Watch for new iframes popping in
+	document.addEventListener('load', init, true);
 
   function init() {
 
@@ -432,7 +430,7 @@
  *   if you're new to GA/GTM. GTM or Universal Analytics Only!
  */
 /*
- * v1.0.1
+ * v1.0.2
  * Created by the Google Analytics consultants at http://www.lunametrics.com
  * Written by @notdanwilkerson
  * Documentation: https://github.com/lunametrics/vimeo-google-analytics/

@@ -14,14 +14,12 @@
 
   } else {
 
-    document.addEventListener('DOMContentLoaded', function() {
-
-      init();
-      document.addEventListener('load', init, true);
-
-    });
+    document.addEventListener('DOMContentLoaded', init);
 
   }
+
+	// Watch for new iframes popping in
+	document.addEventListener('load', init, true);
 
   function init() {
 
